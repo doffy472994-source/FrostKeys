@@ -3,6 +3,10 @@ name: Build debug APK
 on:
   workflow_dispatch:
 
+# Permissions required to create a GitHub Release
+permissions:
+  contents: write
+
 jobs:
   build:
 
@@ -25,11 +29,17 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew assembleDebug
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - name: Create Release and Upload APK
+        uses: softprops/action-gh-release@v2
         with:
-          name: HeliBoard-debug
-          path: app/build/outputs/apk/debug/*-debug*.apk
+          tag_name: debug-${{ github.run_number }}
+          name: Debug Build #${{ github.run_number }}
+          body: |
+            Automated debug build from workflow run #${{ github.run_number }}.
+            Commit: ${{ github.sha }}
+          draft: false
+          prerelease: true
+          files: app/build/outputs/apk/debug/*-debug*.apk
 
       - name: Archive reports for failed job
         uses: actions/upload-artifact@v4
